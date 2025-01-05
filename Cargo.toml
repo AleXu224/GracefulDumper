@@ -1,0 +1,16 @@
+[workspace]
+members = ["dumpcs-gen", "idapy-gen", "il2cpp", "launcher", "metadata", "proto-gen"]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+
+[workspace.dependencies]
+windows = "0.58.0"
+
+il2cpp = { path = "il2cpp" }
+metadata = { path = "metadata" }
+dumpcs-gen = { path = "dumpcs-gen" }
+idapy-gen = { path = "idapy-gen" }
+proto-gen = { path = "proto-gen" }

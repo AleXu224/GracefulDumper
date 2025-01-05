@@ -1,0 +1,8 @@
+[package]
+name = "idapy-gen"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+il2cpp.workspace = true
+metadata.workspace = true

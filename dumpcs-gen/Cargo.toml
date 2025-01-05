@@ -1,0 +1,7 @@
+[package]
+name = "dumpcs-gen"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+il2cpp.workspace = true
