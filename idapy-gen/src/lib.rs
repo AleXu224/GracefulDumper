@@ -2,7 +2,7 @@ mod util;
 
 use std::io::{self, Write};
 
-use il2cpp::vm::Il2cppDomain;
+use il2cpp::{vm::Il2cppDomain};
 use metadata::MetadataUsage;
 use util::write_escaped_str;
 
@@ -113,6 +113,10 @@ unsafe fn write_string_literals<W: Write>(out: &mut W) -> io::Result<()> {
     for i in 0..metadata::USAGES_COUNT {
         if let Some(entry) = metadata::get_usage_by_index(i) {
             if let MetadataUsage::StringLiteral(s) = entry.usage {
+                let ss = s.to_string();
+                if ss.is_empty() {
+                    continue;
+                }
                 if !first_write {
                     write!(out, ", ")?;
                 }
@@ -123,7 +127,7 @@ unsafe fn write_string_literals<W: Write>(out: &mut W) -> io::Result<()> {
                     "{{\"Address\":{},\"Value\":\"",
                     entry.address - il2cpp::ffi::base()
                 )?;
-                write_escaped_str(out, &s.to_string())?;
+                write_escaped_str(out, &ss)?;
                 write!(out, "\"}}")?;
             }
         }

@@ -26,6 +26,6 @@ impl Il2cppImage {
 
     pub fn get_class_by_name(&self, namespace: &str, name: &str) -> Option<Il2cppClass> {
         let ptr = unsafe { il2cpp_class_from_name(self.0, as_cstr!(namespace), as_cstr!(name)) };
-        ((ptr as usize) != 0).then_some(Il2cppClass(ptr))
+        ((ptr as usize) != 0).then(|| Il2cppClass(ptr))
     }
 }

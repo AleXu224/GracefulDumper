@@ -2,10 +2,23 @@ use super::*;
 
 #[repr(transparent)]
 pub struct Il2cppClass(pub *const u8);
+pub struct Il2CppTypeDefinition(pub *const u8);
 
 impl std::fmt::Debug for Il2cppClass {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.il2cpp_type().name())
+    }
+}
+
+impl Il2CppTypeDefinition {
+    pub fn namespace_index(&self) -> u32 {
+        unsafe { *(self.0.wrapping_add(12) as *const u32) }
+    }
+    pub fn namespace(&self) -> Cow<'static, str> {
+        unsafe { cstr(metadatacache_getstringfromindex(self.namespace_index())) }
+    }
+    pub fn field_count(&self) -> u16 {
+        unsafe { *(self.0.wrapping_add(60) as *const u16) }
     }
 }
 
@@ -19,11 +32,22 @@ impl Il2cppClass {
     }
 
     pub fn name(&self) -> Cow<'static, str> {
-        unsafe { cstr(il2cpp_class_get_name(self.0)) }
+        unsafe {
+            let name_ptr = il2cpp_class_get_name(self.0);
+            if name_ptr.is_null() {
+                Cow::Borrowed("<null>")
+            } else {
+                cstr(name_ptr)
+            }
+        }
+    }
+
+    pub fn type_definition(&self) -> Il2CppTypeDefinition {
+        unsafe { Il2CppTypeDefinition(*(self.0.wrapping_add(48) as *const usize) as *const u8) }
     }
 
     pub fn namespace(&self) -> Cow<'static, str> {
-        unsafe { cstr(il2cpp_class_get_namespace(self.0)) }
+        self.type_definition().namespace()
     }
 
     pub fn image(&self) -> Il2cppImage {
@@ -47,11 +71,8 @@ impl Il2cppClass {
         unsafe {
             let mut count = 0;
             let interfaces = il2cpp_class_get_interfaces(self.0, &mut count);
-            (count != 0)
-                .then_some(std::slice::from_raw_parts(
-                    mem::transmute(interfaces),
-                    count,
-                ))
+            (count != 0 && (interfaces as usize != 0))
+                .then(|| std::slice::from_raw_parts(mem::transmute(interfaces), count))
                 .unwrap_or_default()
         }
     }
@@ -60,9 +81,11 @@ impl Il2cppClass {
         self.init();
 
         unsafe {
-            let mut count = 0;
-            let fields = il2cpp_class_get_fields(self.0, &mut count);
-            std::slice::from_raw_parts(mem::transmute(fields), count)
+            let count = self.type_definition().field_count() as usize;
+            let fields = il2cpp_class_get_fields(self.0);
+            (count != 0 && (fields as usize != 0))
+                .then(|| std::slice::from_raw_parts(mem::transmute(fields), count))
+                .unwrap_or_default()
         }
     }
 
@@ -72,7 +95,9 @@ impl Il2cppClass {
         unsafe {
             let mut count = 0;
             let methods = il2cpp_class_get_methods(self.0, &mut count);
-            std::slice::from_raw_parts(mem::transmute(methods), count)
+            (count != 0 && (methods as usize != 0))
+                .then(|| std::slice::from_raw_parts(mem::transmute(methods), count))
+                .unwrap_or_default()
         }
     }
 

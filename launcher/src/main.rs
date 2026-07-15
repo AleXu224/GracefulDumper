@@ -15,12 +15,7 @@ use windows::Win32::System::Threading::{
 mod reloc;
 mod util;
 
-// 0.1.x - Win.exe
-// 0.2.x - ZZZ.exe
-// 0.3.0+ - ZenlessZoneZero.exe
-// 0.3.0+ (NDA) - ZenlessZoneZeroBeta.exe
-
-const GAME_EXECUTABLE: PCSTR = s!("ZZZ.exe");
+const GAME_EXECUTABLE: PCSTR = s!("ZenlessZoneZero.exe");
 
 unsafe fn inject_self(target: HANDLE) {
     let self_base = GetModuleHandleA(PCSTR::null()).unwrap();
@@ -30,7 +25,7 @@ unsafe fn inject_self(target: HANDLE) {
         target,
         None,
         0,
-        Some(std::mem::transmute(entry_point as usize + reloc_delta)),
+        Some(std::mem::transmute((entry_point as usize).wrapping_add(reloc_delta))),
         None,
         0,
         None,

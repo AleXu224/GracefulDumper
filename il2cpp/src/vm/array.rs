@@ -18,11 +18,11 @@ impl From<Il2cppArray> for usize {
 
 impl Il2cppArray {
     pub fn new(array_type: &Il2cppClass, size: usize) -> Self {
-        unsafe { Self(il2cpp_array_new(array_type.0, size as u32)) }
+        unsafe { Self(il2cpp_array_new(array_type.0, size as u64)) }
     }
 
     pub fn length(&self) -> usize {
-        unsafe { *self.0.wrapping_add(24).cast::<u32>() as usize }
+        unsafe { *self.0.wrapping_add(24).cast::<u64>() as usize }
     }
 
     pub fn data_ptr_raw(&self) -> *const u8 {

@@ -5,7 +5,7 @@ use std::{
 };
 
 use cache::{CachedType, TypeCache};
-use il2cpp::vm::*;
+use il2cpp::{ffi::il2cpp_ptr_base, vm::*};
 use output::{Enum, Field, FieldComment, Message, Oneof, ProtoFile};
 use util::{
     pack_wire_tag, WIRE_TYPE_I32, WIRE_TYPE_I64, WIRE_TYPE_LENGTH_PREFIXED, WIRE_TYPE_VAR_INT,
@@ -16,12 +16,12 @@ mod output;
 mod util;
 
 // Names
-const CODED_INPUT_STREAM: &str = "MBJDEDCJACC";
-const MERGE_FROM: &str = "BLCPKKJCPDM";
-const GET_CMD_ID: &str = "FKEKBMJGFOM";
-const UNKNOWN_FIELD_SET: &str = "IHANLCCDMBG";
-const BYTE_STRING: &str = "HNGPONOFMLO";
-const PROTOBUF_ANY: &str = "DBIEFFIJOMC";
+const CODED_INPUT_STREAM: &str = "GKPOGDJDFMF";
+const MERGE_FROM: &str = "HNAJNLPJDLA";
+const GET_CMD_ID: &str = "BIGFIFHDJFH";
+const UNKNOWN_FIELD_SET: &str = "JPOGGPMFAHG";
+const BYTE_STRING: &str = "IOOPOJMOOOP";
+const PROTOBUF_ANY: &str = "PLIPLIPJALB";
 
 struct TrackedValues<'tc> {
     type_cache: &'tc TypeCache,
@@ -161,7 +161,6 @@ pub unsafe fn dump<W: Write>(out: &mut W) -> io::Result<()> {
     il2cpp::ffi::il2cpp_gc_disable();
     let domain = Il2cppDomain::get();
     domain.attach_thread();
-
     let type_cache = TypeCache::init(&domain);
     let nap_proto_gen = domain.assembly_open("NapProtoGen.dll").image();
 
@@ -179,11 +178,13 @@ pub unsafe fn dump<W: Write>(out: &mut W) -> io::Result<()> {
             .invoke::<usize>(&proto_instance, &[])
             .unwrap();
 
-        let cmd_id = *(get_cmd_id
+        let cmd_id_result = get_cmd_id
             .invoke::<Il2cppObject>(&proto_instance, &[])
-            .unwrap()
-            .0
-            .wrapping_add(16) as *const u16);
+            .unwrap();
+        if cmd_id_result.0.is_null() {
+            panic!("GetCmdId returned null");
+        }
+        let cmd_id = *(cmd_id_result.0.wrapping_add(16) as *const u16);
 
         let mut message_info = MessageMinimalInfo::new(cmd_id);
 
@@ -319,9 +320,7 @@ pub unsafe fn dump<W: Write>(out: &mut W) -> io::Result<()> {
     for i in 0..nap_proto_gen.get_class_count() {
         let class = nap_proto_gen.get_class(i);
         if class.name() == "__HOLLOW__1_0" {
-            // Beebyte class is always the last one in assembly
-            // after it only there are only ILFix classes
-            break;
+            continue;
         }
         if let Some(message_info) = minimal_info_map.get(&class.token()) {
             let mut fields = Vec::with_capacity(message_info.fields.len());

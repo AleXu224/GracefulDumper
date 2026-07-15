@@ -48,7 +48,7 @@ pub unsafe fn relocate_image(source: HMODULE, target_process: HANDLE) -> usize {
                     .wrapping_add((*(relocation_rva.wrapping_add(i)) & 0xFFF) as usize)
                     as *mut usize;
 
-                *patched_address += delta_image_base as usize;
+                *patched_address = (*patched_address).wrapping_add(delta_image_base as usize);
             }
         }
 
