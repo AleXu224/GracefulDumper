@@ -1,7 +1,7 @@
 # GracefulDumper
 
 ## What
-This is a fork of the original [GracefulDumper](https://github.com/Perfare/Il2CppDumper), a Zenless Zone Zero dumper, updated to version 3.0. Made for educational and recreational purposes.
+This is a fork of the original [GracefulDumper](https://github.com/thexeondev/GracefulDumper), a Zenless Zone Zero dumper, updated to version 3.0. Made for educational and recreational purposes.
 I have updated the dumper to work with the latest version of the game, though I learned how to reverse engineer specifically for this project so not all might be perfect.
 
 ## Features
