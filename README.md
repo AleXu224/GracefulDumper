@@ -14,7 +14,7 @@ This software can help you with dumping:
 This dumper is written in Rust, without use of any 3rd party dependencies (except `windows` crate for WINAPI). It also implements idiomatic rust bindings for internal il2cpp functions.
 
 ## Usage
-Just compile it in release mode (`cargo build --release`), put the launcher.exe in client folder and run it. Launcher will inject itself and dump all the definitions after il2cpp initializes. Supported game client: `OSCBWin3.0`.
+Just compile it in release mode (`cargo build --release`), put the launcher.exe in client folder and run it. Launcher will inject itself and dump all the definitions after il2cpp initializes. Supported game client: `OSPRODWin3.0.0`.
 
 ## Contributing
 Contributions are welcome. You can submit a pull request or open an issue if you find a bug
