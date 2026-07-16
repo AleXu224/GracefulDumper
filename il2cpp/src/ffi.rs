@@ -101,7 +101,7 @@ pub unsafe fn il2cpp_class_get_methods(class: *const u8, count: &mut usize) -> *
 }
 
 pub unsafe fn il2cpp_method_get_address(method: *const u8) -> usize {
-    *method.wrapping_add(0).cast::<usize>()
+    *method.wrapping_add(8).cast::<usize>()
 }
 
 pub unsafe fn il2cpp_type_get_attrs(ty: *const u128) -> u32 {

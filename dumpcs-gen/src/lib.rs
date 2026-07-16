@@ -1,5 +1,5 @@
 use il2cpp::{
-    ffi::il2cpp_ptr_base,
+    ffi::{base, il2cpp_ptr_base},
     vm::{attributes::*, Il2cppField, Il2cppMethod},
 };
 use std::io::{self, Write};
@@ -108,15 +108,13 @@ fn write_class_field<W: Write>(out: &mut W, field: &Il2cppField) -> io::Result<(
 }
 
 fn write_class_method<W: Write>(out: &mut W, method: &Il2cppMethod) -> io::Result<()> {
-    unsafe {
-        write!(
-            out,
-            "    // RVA: 0x{:X}\n    ",
-            (method.address() != 0)
-                .then_some(method.address().wrapping_sub(il2cpp_ptr_base() as usize))
-                .unwrap_or(0)
-        )?;
-    }
+    write!(
+        out,
+        "    // RVA: 0x{:X}\n    ",
+        (method.address() != 0)
+            .then(|| method.address().wrapping_sub(base() as usize))
+            .unwrap_or(0)
+    )?;
 
     prepend_method_modifiers(out, method.attrs())?;
     write!(out, "{} {}(", method.return_type().name(), method.name())?;
