@@ -1,5 +1,5 @@
 use il2cpp::{
-    ffi::{base, il2cpp_ptr_base},
+    ffi::base,
     vm::{attributes::*, Il2cppField, Il2cppMethod},
 };
 use std::io::{self, Write};

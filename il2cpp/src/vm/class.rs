@@ -12,13 +12,13 @@ impl std::fmt::Debug for Il2cppClass {
 
 impl Il2CppTypeDefinition {
     pub fn namespace_index(&self) -> u32 {
-        unsafe { *(self.0.wrapping_add(12) as *const u32) }
+        unsafe { il2cpp_type_definition_get_namespace_index(self.0) }
     }
     pub fn namespace(&self) -> Cow<'static, str> {
         unsafe { cstr(metadatacache_getstringfromindex(self.namespace_index())) }
     }
     pub fn field_count(&self) -> u16 {
-        unsafe { *(self.0.wrapping_add(60) as *const u16) }
+        unsafe { il2cpp_type_definition_get_field_count(self.0) }
     }
 }
 
@@ -43,11 +43,12 @@ impl Il2cppClass {
     }
 
     pub fn type_definition(&self) -> Il2CppTypeDefinition {
-        unsafe { Il2CppTypeDefinition(*(self.0.wrapping_add(48) as *const usize) as *const u8) }
+        unsafe { Il2CppTypeDefinition(il2cpp_class_get_type_defition(self.0)) }
     }
 
     pub fn namespace(&self) -> Cow<'static, str> {
-        self.type_definition().namespace()
+        let type_definition = self.type_definition();
+        type_definition.namespace()
     }
 
     pub fn image(&self) -> Il2cppImage {

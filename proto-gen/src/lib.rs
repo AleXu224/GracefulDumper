@@ -1,11 +1,11 @@
 use std::{
     borrow::Cow,
     collections::BTreeMap,
-    io::{self, Write},
+    io,
 };
 
 use cache::{CachedType, TypeCache};
-use il2cpp::{ffi::il2cpp_ptr_base, vm::*};
+use il2cpp::{vm::*};
 use output::{Enum, Field, FieldComment, Message, Oneof, ProtoFile};
 use util::{
     pack_wire_tag, WIRE_TYPE_I32, WIRE_TYPE_I64, WIRE_TYPE_LENGTH_PREFIXED, WIRE_TYPE_VAR_INT,
@@ -16,12 +16,12 @@ mod output;
 mod util;
 
 // Names
-const CODED_INPUT_STREAM: &str = "GKPOGDJDFMF";
-const MERGE_FROM: &str = "HNAJNLPJDLA";
-const GET_CMD_ID: &str = "BIGFIFHDJFH";
-const UNKNOWN_FIELD_SET: &str = "JPOGGPMFAHG";
-const BYTE_STRING: &str = "IOOPOJMOOOP";
-const PROTOBUF_ANY: &str = "PLIPLIPJALB";
+const CODED_INPUT_STREAM: &str = "DIDOBPLLLEF";
+const MERGE_FROM: &str = "CAONNEMOKAL";
+const GET_CMD_ID: &str = "LHPLLONBEMG";
+const UNKNOWN_FIELD_SET: &str = "MCGILHEIBAF";
+const BYTE_STRING: &str = "LAJMBKENLDM";
+const PROTOBUF_ANY: &str = "EJODKAPOCBJ";
 
 struct TrackedValues<'tc> {
     type_cache: &'tc TypeCache,
@@ -157,7 +157,7 @@ impl<'tc> TrackedValues<'tc> {
     }
 }
 
-pub unsafe fn dump<W: Write>(out: &mut W) -> io::Result<()> {
+unsafe fn build_proto_file() -> io::Result<ProtoFile> {
     il2cpp::ffi::il2cpp_gc_disable();
     let domain = Il2cppDomain::get();
     domain.attach_thread();
@@ -349,6 +349,7 @@ pub unsafe fn dump<W: Write>(out: &mut W) -> io::Result<()> {
                             offset: field.offset(),
                             xor_const: field_info.xor,
                         }),
+                        is_enum: is_enum_type(&type_cache, &field.il2cpp_type().to_class()),
                     },
                 ));
             }
@@ -405,6 +406,7 @@ pub unsafe fn dump<W: Write>(out: &mut W) -> io::Result<()> {
                     name: oneof_case_enum_field.name().to_string(),
                     number: field_info.tag >> 3,
                     comment: None,
+                    is_enum: is_enum_type(&type_cache, &oneof_variant.variant_type.to_class()),
                 });
             }
 
@@ -449,8 +451,11 @@ pub unsafe fn dump<W: Write>(out: &mut W) -> io::Result<()> {
         }
     }
 
-    writeln!(out, "{proto_file}")?;
-    Ok(())
+    Ok(proto_file)
+}
+
+pub unsafe fn dump() -> io::Result<ProtoFile> {
+    build_proto_file()
 }
 
 fn csharp_type_to_protobuf_type(cache: &TypeCache, ty: &Il2cppClass) -> Cow<'static, str> {
@@ -482,6 +487,18 @@ fn csharp_type_to_protobuf_type(cache: &TypeCache, ty: &Il2cppClass) -> Cow<'sta
             )),
             _ => ty.name(),
         }
+    }
+}
+
+fn is_enum_type(cache: &TypeCache, ty: &Il2cppClass) -> bool {
+    match ty.get_generic_argument_count() {
+        0 => ty
+            .parent_class()
+            .map(|p| matches!(cache.type_map.get(&(p.0 as usize)), Some(&CachedType::Enum)))
+            .unwrap_or(false),
+        1 => is_enum_type(cache, &ty.get_generic_argument(0).to_class()),
+        2 => is_enum_type(cache, &ty.get_generic_argument(1).to_class()),
+        _ => false,
     }
 }
 

@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fmt};
+use std::{borrow::Cow, fmt, io::{self, Write}};
 
 pub struct ProtoFile {
     pub syntax: String,
@@ -23,6 +23,7 @@ pub struct Field {
     pub name: String,
     pub number: u32,
     pub comment: Option<FieldComment>,
+    pub is_enum: bool,
 }
 
 pub struct FieldComment {
@@ -38,6 +39,101 @@ pub struct Oneof {
 pub enum ProtoItem {
     Message(Message),
     Enum(Enum),
+}
+
+impl ProtoFile {
+    pub fn write_json<W: Write>(&self, out: &mut W) -> io::Result<()> {
+        write!(out, "[")?;
+        let mut first_message = true;
+        for item in self.items.iter() {
+            if let ProtoItem::Message(message) = item {
+                if !first_message {
+                    write!(out, ",")?;
+                }
+                first_message = false;
+                write!(out, "{{\"name\":\"")?;
+                write_escaped(out, &message.name)?;
+                write!(out, "\",\"cmd_id\":")?;
+                if message.cmd_id == 0 {
+                    write!(out, "null")?;
+                } else {
+                    write!(out, "{}", message.cmd_id)?;
+                }
+                write!(out, ",\"fields\":[")?;
+
+                let mut all_fields: Vec<&Field> = message.fields.iter().collect();
+                for oneof in &message.oneofs {
+                    all_fields.extend(oneof.fields.iter());
+                }
+
+                let mut first_field = true;
+                for field in &all_fields {
+                    if !first_field {
+                        write!(out, ",")?;
+                    }
+                    first_field = false;
+
+                    let (base_type, is_repeated) = strip_repeated(&field.kind);
+
+                    write!(out, "{{\"number\":{},\"name\":\"", field.number)?;
+                    write_escaped(out, &field.name)?;
+                    write!(out, "\",\"type\":\"")?;
+                    write_escaped(out, base_type)?;
+                    write!(out, "\",\"repeated\":{}", is_repeated)?;
+                    write!(out, ",\"is_native_type\":{}", is_native_type(base_type))?;
+                    write!(out, ",\"is_enum\":{}", field.is_enum)?;
+                    write!(out, ",\"xor_value\":")?;
+                    match field.comment {
+                        Some(ref c) => write!(out, "{}", c.xor_const)?,
+                        None => write!(out, "null")?,
+                    }
+                    write!(out, "}}")?;
+                }
+
+                write!(out, "]}}")?;
+            }
+        }
+        write!(out, "]")
+    }
+}
+
+fn write_escaped<W: Write>(out: &mut W, s: &str) -> io::Result<()> {
+    for &b in s.as_bytes() {
+        match b {
+            b'"' => write!(out, "\\\"")?,
+            b'\\' => write!(out, "\\\\")?,
+            b'\n' => write!(out, "\\n")?,
+            b'\r' => write!(out, "\\r")?,
+            b'\t' => write!(out, "\\t")?,
+            b if b < 0x20 => write!(out, "\\u{:04x}", b)?,
+            _ => out.write_all(&[b])?,
+        }
+    }
+    Ok(())
+}
+
+fn is_native_type(kind: &str) -> bool {
+    matches!(
+        kind,
+        "bool"
+            | "int32"
+            | "uint32"
+            | "int64"
+            | "uint64"
+            | "float"
+            | "double"
+            | "string"
+            | "bytes"
+            | "google.protobuf.Any"
+    )
+}
+
+fn strip_repeated(kind: &str) -> (&str, bool) {
+    if let Some(base) = kind.strip_prefix("repeated ") {
+        (base, true)
+    } else {
+        (kind, false)
+    }
 }
 
 impl fmt::Display for ProtoFile {
