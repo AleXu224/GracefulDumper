@@ -54,13 +54,6 @@ unsafe fn dump_thread() {
     dumpcs_gen::dump(&mut BufWriter::new(&mut dump_cs)).unwrap();
     println!("done!");
 
-    // No longer maintaining this, way too much trouble for too little gain.
-    // print!("Generating script.json...");
-    // std::io::stdout().flush().unwrap();
-    // let mut script_json = File::create("script.json").unwrap();
-    // idapy_gen::write_to_file(&mut BufWriter::new(&mut script_json)).unwrap();
-    // println!("done!");
-
     print!("Generating nap.proto and nap.json...");
     std::io::stdout().flush().unwrap();
     let proto_file = proto_gen::dump().unwrap();

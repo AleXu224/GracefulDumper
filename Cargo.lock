@@ -10,14 +10,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "idapy-gen"
-version = "0.0.1"
-dependencies = [
- "il2cpp",
- "metadata",
-]
-
-[[package]]
 name = "il2cpp"
 version = "0.0.1"
 dependencies = [
@@ -29,18 +21,9 @@ name = "launcher"
 version = "0.0.1"
 dependencies = [
  "dumpcs-gen",
- "idapy-gen",
  "il2cpp",
- "metadata",
  "proto-gen",
  "windows",
-]
-
-[[package]]
-name = "metadata"
-version = "0.0.1"
-dependencies = [
- "il2cpp",
 ]
 
 [[package]]

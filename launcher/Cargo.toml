@@ -5,9 +5,7 @@ edition.workspace = true
 
 [dependencies]
 il2cpp.workspace = true
-metadata.workspace = true
 dumpcs-gen.workspace = true
-idapy-gen.workspace = true
 proto-gen.workspace = true
 
 windows = { workspace = true, features = [
