@@ -16,12 +16,12 @@ mod output;
 mod util;
 
 // Names
-const CODED_INPUT_STREAM: &str = "CPAGGPCFFMK";
-const MERGE_FROM: &str = "DFPJONEONIO";
-const GET_CMD_ID: &str = "LCKPHIEEODG";
-const UNKNOWN_FIELD_SET: &str = "HCFKHMCLBHN";
-const BYTE_STRING: &str = "ODLKAIJKIPI";
-const PROTOBUF_ANY: &str = "JCCKNPJGJIN";
+const CODED_INPUT_STREAM: &str = "PPPHCHDBPKE";
+const MERGE_FROM: &str = "NNMIABKFEOJ";
+const GET_CMD_ID: &str = "DKHALDDAFFC";
+const UNKNOWN_FIELD_SET: &str = "EGLPLOHEAEL";
+const BYTE_STRING: &str = "IKNGGHOCDBF";
+const PROTOBUF_ANY: &str = "MODDNDNMHFM";
 
 struct TrackedValues<'tc> {
     type_cache: &'tc TypeCache,

@@ -29,7 +29,7 @@ impl Il2cppMethod {
     }
 
     pub fn attrs(&self) -> u32 {
-        unsafe { il2cpp_method_get_attrs(self.0) }
+        unsafe { il2cpp_method_get_flags(self.0) }
     }
 
     pub fn class(&self) -> Il2cppClass {
